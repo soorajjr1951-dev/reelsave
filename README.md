@@ -1,6 +1,8 @@
 # ReelSave desktop app (Windows + Mac)
 
-Electron app. yt-dlp and ffmpeg are bundled, so users install nothing else.
+Electron app for Instagram reels/posts and Pinterest pins (pinterest.com/pin/... and pin.it short links).
+Video pins save as MP4, MP4 (H.264), MP3 or JPG. Image-only pins save as JPG.
+yt-dlp and ffmpeg are bundled, so users install nothing else.
 Files save to `Downloads/ReelSave`.
 
 ## Windows (built)

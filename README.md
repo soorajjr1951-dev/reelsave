@@ -35,4 +35,4 @@ Instagram changes often. Update yt-dlp and rebuild: `npm run prepare-bin -- --up
 
 ## Errors
 The app shows friendly messages. The real yt-dlp error is written to a log file:
-`%APPDATA%eelsave\logseelsave.log` (Windows) or `~/Library/Logs/reelsave/reelsave.log` (Mac).
+`%APPDATA%\reelsave\logs\reelsave.log` (Windows) or `~/Library/Logs/reelsave/reelsave.log` (Mac).

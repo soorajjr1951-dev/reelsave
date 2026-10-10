@@ -1,10 +1,12 @@
 const $ = (id) => document.getElementById(id);
 const urlIn = $('url'), box = $('box'), btn = $('btn'), msg = $('msg'), card = $('card');
-const LINK = /^https?:\/\/(?:(?:www\.)?instagram\.com\/(?:reels?|p|tv)\/[A-Za-z0-9_-]+|(?:[a-z0-9-]+\.)?pinterest\.[a-z.]{2,7}\/pin\/[^/?#]+|pin\.it\/[A-Za-z0-9_-]+)/i;
-const isPin = (v) => /pinterest\.|pin\.it\//i.test(v);
+const LINK = /^https?:\/\/(?:(?:www\.)?instagram\.com\/(?:reels?|p|tv)\/[A-Za-z0-9_-]+|(?:[a-z0-9-]+\.)?pinterest\.[a-z.]{2,7}\/pin\/[^/?#]+|pin\.it\/[A-Za-z0-9_-]+|(?:(?:www\.|m\.|music\.)?youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)[A-Za-z0-9_-]{11})/i;
+const platformOf = (v) => (/pinterest\.|pin\.it\//i.test(v) ? 'pinterest' : /youtu/i.test(v) ? 'youtube' : 'instagram');
+const NOT_A_LINK = 'That does not look like an Instagram, Pinterest or YouTube link.';
 const TITLES = {
   instagram: { video: 'Instagram Reels Download', audio: 'Instagram Audio Download (MP3)', photo: 'Instagram Photo Download' },
   pinterest: { video: 'Pinterest Video Download', audio: 'Pinterest Audio Download (MP3)', photo: 'Pinterest Image Download' },
+  youtube: { video: 'YouTube Video Download', audio: 'YouTube Audio Download (MP3)', photo: 'YouTube Thumbnail Download' },
 };
 const OPTS = {
   video: { t: 'video', label: '⬇ Download MP4', sub: 'Original quality · fastest', short: 'MP4' },
@@ -20,23 +22,31 @@ try { $('cookies').value = localStorage.getItem('cookies') || ''; } catch (_) {}
 $('cookies').onchange = () => { try { localStorage.setItem('cookies', cookies()); } catch (_) {} };
 
 function setMsg(text, cls) { msg.className = cls || ''; msg.textContent = text; }
-const fmtDur = (s) => (s ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : '');
+const fmtDur = (s) => {
+  if (!s) return '';
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+};
 function syncBox() {
   const v = urlIn.value.trim();
-  if (v && LINK.test(v)) { platform = isPin(v) ? 'pinterest' : 'instagram'; setTitle(); }
+  if (v && LINK.test(v)) { platform = platformOf(v); setTitle(); }
   box.classList.toggle('filled', v.length > 0);
   box.classList.toggle('bad', v.length > 8 && !LINK.test(v));
 }
 
 function renderButtons() {
   const imageOnly = current && current.imageOnly;
+  const yt = platform === 'youtube';
   const p = imageOnly ? OPTS.photo : OPTS[tab], main = $('mainBtn');
   main.textContent = '';
   main.append(p.label);
-  const small = document.createElement('small'); small.textContent = p.sub; main.append(small);
+  const small = document.createElement('small'); small.textContent = yt && p.t === 'photo' ? 'Thumbnail · full size' : p.sub; main.append(small);
   main.onclick = () => download(p);
+  // YouTube: choose a quality for video; the H.264 option is not needed because H.264 is preferred already.
+  $('qualityRow').hidden = !(yt && p.t === 'video');
+  card.classList.toggle('wide', yt);
   const others = $('others'); others.textContent = '';
-  Object.values(OPTS).filter((o) => !imageOnly && o.t !== p.t).forEach((o) => {
+  Object.values(OPTS).filter((o) => !imageOnly && o.t !== p.t && !(yt && o.t === 'h264')).forEach((o) => {
     const b = document.createElement('button');
     b.type = 'button'; b.textContent = o.short; b.title = o.sub;
     b.onclick = () => download(o);
@@ -53,7 +63,7 @@ function reset(focus) {
 async function search() {
   const v = urlIn.value.trim();
   if (busy || !v) return;
-  if (!LINK.test(v)) { setMsg('That does not look like an Instagram or Pinterest link.', 'err'); return; }
+  if (!LINK.test(v)) { setMsg(NOT_A_LINK, 'err'); return; }
   if (v === lastUrl && current) return;
   busy = true; btn.disabled = true; card.classList.remove('show'); current = null; lastFile = null;
   $('showBtn').hidden = true;
@@ -62,8 +72,8 @@ async function search() {
   if (j.ok) {
     current = j; lastUrl = v; platform = j.platform || 'instagram'; setTitle();
     $('thumb').src = j.thumb || '';
-    $('ctitle').textContent = j.title || (platform === 'pinterest' ? 'Pinterest pin' : 'Instagram reel');
-    $('cinfo').textContent = [j.uploader && '@' + j.uploader, fmtDur(j.duration), j.height && (j.width + '×' + j.height)].filter(Boolean).join(' · ') || (j.imageOnly ? 'Image pin (no video)' : '');
+    $('ctitle').textContent = j.title || ({ pinterest: 'Pinterest pin', youtube: 'YouTube video' }[platform] || 'Instagram reel');
+    $('cinfo').textContent = [j.uploader && (platform === 'youtube' ? j.uploader : '@' + j.uploader), fmtDur(j.duration), j.height && (j.width + '×' + j.height)].filter(Boolean).join(' · ') || (j.imageOnly ? 'Image pin (no video)' : '');
     renderButtons(); card.classList.add('show'); setMsg('');
   } else setMsg(j.error, 'err');
   busy = false; btn.disabled = false;
@@ -74,16 +84,24 @@ async function download(opt) {
   busy = true;
   const ctrls = card.querySelectorAll('.main, .others button');
   ctrls.forEach((b) => (b.disabled = true));
-  $('bar').classList.add('on');
-  setMsg(opt.t === 'h264' ? 'Converting to H.264… this can take a minute.' : 'Downloading…');
-  const r = await window.api.get(lastUrl, opt.t, cookies());
+  const bar = $('bar'), fill = bar.querySelector('i');
+  bar.classList.remove('det'); fill.style.width = ''; bar.classList.add('on');
+  const label = platform === 'youtube' && opt.t === 'video' ? 'Downloading' : 'Downloading';
+  setMsg(opt.t === 'h264' ? 'Downloading, then converting to H.264… this can take a minute.' : label + '…');
+  // Real percentages from yt-dlp (0-100). Falls back to the moving bar when none arrive (e.g. photos).
+  window.api.onProgress((p) => {
+    bar.classList.add('det'); fill.style.width = p + '%';
+    if (opt.t !== 'h264' || p < 100) setMsg(label + '… ' + p + '%');
+  });
+  const r = await window.api.get(lastUrl, opt.t, cookies(), $('quality').value);
+  window.api.onProgress(null);
   if (r.ok) {
     lastFile = r.file;
     const name = r.file.split(/[\\/]/).pop();
     setMsg('✓ Saved ' + name, 'ok');
     $('showBtn').hidden = false;
   } else setMsg(r.error, 'err');
-  $('bar').classList.remove('on');
+  bar.classList.remove('on', 'det');
   ctrls.forEach((b) => (b.disabled = false));
   busy = false;
 }
@@ -99,7 +117,7 @@ $('pasteBtn').onclick = async () => {
   const t = ((await window.api.paste()) || '').trim();
   if (!t) { setMsg('Clipboard is empty. Copy a link first.', 'err'); return; }
   urlIn.value = t; syncBox();
-  if (LINK.test(t)) search(); else setMsg('That does not look like an Instagram or Pinterest link.', 'err');
+  if (LINK.test(t)) search(); else setMsg(NOT_A_LINK, 'err');
 };
 $('tabs').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;

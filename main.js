@@ -6,6 +6,17 @@ const binDir = app.isPackaged ? path.join(process.resourcesPath, 'bin') : path.j
 const outDir = path.join(app.getPath('downloads'), 'ReelSave');
 const core = createCore({ binDir, outDir });
 
+// Real yt-dlp errors go to a log file (the UI only shows friendly messages).
+function logError(err) {
+  try {
+    const dir = app.getPath('logs');
+    require('fs').mkdirSync(dir, { recursive: true });
+    require('fs').appendFileSync(path.join(dir, 'reelsave.log'), `[${new Date().toISOString()}] ${err.detail || err.stack || err.message}
+
+`);
+  } catch (_) { /* logging must never break the app */ }
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 520, height: 780, minWidth: 400, minHeight: 560,
@@ -25,7 +36,12 @@ const wrap = (fn) => async (_e, ...a) => {
 };
 
 ipcMain.handle('info', wrap((url, cookies) => core.info(url, cookies)));
-ipcMain.handle('get', wrap((url, type, cookies) => core.get(url, type, cookies)));
+ipcMain.handle('get', async (e, url, type, cookies, quality) => {
+  try {
+    const r = await core.get(url, type, cookies, quality, (p) => { if (!e.sender.isDestroyed()) e.sender.send('progress', p); });
+    return { ok: true, ...r };
+  } catch (err) { logError(err); return { ok: false, error: err.message || 'Unexpected error.' }; }
+});
 ipcMain.handle('reveal', (_e, file) => { if (file) shell.showItemInFolder(file); });
 ipcMain.handle('openFolder', () => shell.openPath(outDir));
 ipcMain.handle('paste', () => clipboard.readText());

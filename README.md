@@ -1,6 +1,7 @@
 # ReelSave desktop app (Windows + Mac)
 
-Electron app for Instagram reels/posts and Pinterest pins (pinterest.com/pin/... and pin.it short links).
+Electron app for Instagram reels/posts, Pinterest pins (pinterest.com/pin/... and pin.it short links) and YouTube videos/Shorts.
+YouTube: pick 360p to 1080p (or maximum, up to 4K), or save MP3 audio or the thumbnail. Playlists are not downloaded, only the single video.
 Video pins save as MP4, MP4 (H.264), MP3 or JPG. Image-only pins save as JPG.
 yt-dlp and ffmpeg are bundled, so users install nothing else.
 Files save to `Downloads/ReelSave`.
@@ -31,3 +32,7 @@ Instagram changes often. Update yt-dlp and rebuild: `npm run prepare-bin -- --up
 
 ## Dev
 `npm start` runs the app. `node scripts/test-core.js <reel url>` tests all four download types without the GUI.
+
+## Errors
+The app shows friendly messages. The real yt-dlp error is written to a log file:
+`%APPDATA%eelsave\logseelsave.log` (Windows) or `~/Library/Logs/reelsave/reelsave.log` (Mac).

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'self'; script-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReelSave</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <span class="logo">ReelSave</span>
+    <div class="tabs" id="tabs">
+      <button class="on" data-type="video">Video</button>
+      <button data-type="audio">Audio</button>
+      <button data-type="photo">Photo</button>
+    </div>
+  </header>
+
+  <h1 id="title">Instagram Reels Download</h1>
+  <p class="tag">Paste a link. Your file is ready in seconds.</p>
+
+  <form id="f" autocomplete="off">
+    <div class="box" id="box">
+      <input id="url" type="text" inputmode="url" placeholder="Paste Instagram link here…" spellcheck="false">
+      <button type="button" class="chip paste" id="pasteBtn">📋 Paste</button>
+      <button type="button" class="chip x" id="clearBtn" aria-label="Clear">✕</button>
+      <button class="go" id="btn" type="submit">Search</button>
+    </div>
+  </form>
+  <div id="msg" aria-live="polite"></div>
+
+  <div id="card">
+    <img id="thumb" alt="">
+    <div class="meta">
+      <div class="t" id="ctitle"></div>
+      <div class="s" id="cinfo"></div>
+      <button class="main" id="mainBtn" type="button"></button>
+      <div class="others" id="others"></div>
+      <div class="bar" id="bar"><i></i></div>
+      <div class="links">
+        <button class="link" id="showBtn" type="button" hidden>Show in folder</button>
+        <button class="link" id="again" type="button">Download another</button>
+      </div>
+    </div>
+  </div>
+
+  <details class="help">
+    <summary>Having trouble?</summary>
+    <p>If Instagram asks for a login, pick the browser where you are logged in to Instagram. Its cookies are read on this computer only, and are only used for this download.</p>
+    <label>Use cookies from
+      <select id="cookies">
+        <option value="">None (default)</option>
+        <option value="firefox">Firefox</option>
+        <option value="chrome">Chrome</option>
+        <option value="edge">Edge</option>
+        <option value="brave">Brave</option>
+        <option value="safari">Safari (Mac)</option>
+      </select>
+    </label>
+    <button class="link" id="folderBtn" type="button">Open downloads folder</button>
+  </details>
+
+  <footer>Only download content you own or have permission to save. Not affiliated with Instagram or Meta.</footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

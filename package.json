@@ -1,0 +1,43 @@
+{
+  "name": "reelsave",
+  "version": "1.0.0",
+  "description": "Download public Instagram reels as MP4, MP3 or JPG.",
+  "main": "main.js",
+  "author": "adtouch",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "prepare-bin": "node scripts/prepare-bin.js",
+    "test:core": "node scripts/test-core.js",
+    "dist:win": "npm run prepare-bin && electron-builder --win",
+    "dist:mac": "npm run prepare-bin && electron-builder --mac",
+    "dist": "npm run prepare-bin && electron-builder"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "in.adtouch.reelsave",
+    "productName": "ReelSave",
+    "files": ["main.js", "core.js", "preload.js", "renderer/**/*", "package.json"],
+    "extraResources": [{ "from": "bin", "to": "bin" }],
+    "directories": { "output": "dist" },
+    "win": {
+      "target": ["nsis", "portable"],
+      "signAndEditExecutable": false,
+      "artifactName": "ReelSave-${version}-Setup.${ext}"
+    },
+    "portable": { "artifactName": "ReelSave-${version}-Portable.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.utilities",
+      "artifactName": "ReelSave-${version}-${arch}.${ext}",
+      "identity": null
+    }
+  }
+}

@@ -9,9 +9,9 @@
     "start": "electron .",
     "prepare-bin": "node scripts/prepare-bin.js",
     "test:core": "node scripts/test-core.js",
-    "dist:win": "npm run prepare-bin && electron-builder --win",
-    "dist:mac": "npm run prepare-bin && electron-builder --mac",
-    "dist": "npm run prepare-bin && electron-builder"
+    "dist:win": "npm run prepare-bin && electron-builder --win --publish never",
+    "dist:mac": "npm run prepare-bin && electron-builder --mac --publish never",
+    "dist": "npm run prepare-bin && electron-builder --publish never"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0"

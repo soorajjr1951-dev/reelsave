@@ -93,14 +93,17 @@ async function download(opt) {
     bar.classList.add('det'); fill.style.width = p + '%';
     if (opt.t !== 'h264' || p < 100) setMsg(label + '… ' + p + '%');
   });
-  const r = await window.api.get(lastUrl, opt.t, cookies(), $('quality').value);
+  setMsg($('askWhere').checked ? 'Choose where to save…' : msg.textContent);
+  const meta = { id: current.id, title: current.title, platform };
+  const r = await window.api.get(lastUrl, opt.t, cookies(), $('quality').value, meta);
   window.api.onProgress(null);
   if (r.ok) {
     lastFile = r.file;
     const name = r.file.split(/[\\/]/).pop();
     setMsg('✓ Saved ' + name, 'ok');
     $('showBtn').hidden = false;
-  } else setMsg(r.error, 'err');
+  } else if (r.canceled) setMsg('Save cancelled. Nothing was downloaded.');
+  else setMsg(r.error, 'err');
   bar.classList.remove('on', 'det');
   ctrls.forEach((b) => (b.disabled = false));
   busy = false;
@@ -113,6 +116,8 @@ $('clearBtn').onclick = () => reset(true);
 $('again').onclick = () => reset(true);
 $('showBtn').onclick = () => lastFile && window.api.reveal(lastFile);
 $('folderBtn').onclick = () => window.api.openFolder();
+window.api.getSettings().then((s) => { $('askWhere').checked = s.askWhere; });
+$('askWhere').onchange = () => window.api.setSettings({ askWhere: $('askWhere').checked });
 $('pasteBtn').onclick = async () => {
   const t = ((await window.api.paste()) || '').trim();
   if (!t) { setMsg('Clipboard is empty. Copy a link first.', 'err'); return; }

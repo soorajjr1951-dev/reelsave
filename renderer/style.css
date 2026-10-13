@@ -61,7 +61,9 @@ h1 { font-size:1.6rem; margin:18px 0 4px; text-align:center; }
 .link:hover { color:var(--fg); }
 .link[hidden] { display:none; }
 
-.help { margin-top:22px; border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:.88rem; }
+.ask { display:flex; align-items:center; gap:8px; margin-top:18px; font-size:.88rem; color:var(--muted); cursor:pointer; }
+.ask input { accent-color:var(--accent); width:16px; height:16px; }
+.help { margin-top:14px; border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:.88rem; }
 .help summary { cursor:pointer; font-weight:600; }
 .help p { color:var(--muted); margin:8px 0; }
 .help label { display:block; margin-bottom:8px; }

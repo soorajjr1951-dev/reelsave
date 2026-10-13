@@ -4,7 +4,8 @@ Electron app for Instagram reels/posts, Pinterest pins (pinterest.com/pin/... an
 YouTube: pick 360p to 1080p (or maximum, up to 4K), or save MP3 audio or the thumbnail. Playlists are not downloaded, only the single video.
 Video pins save as MP4, MP4 (H.264), MP3 or JPG. Image-only pins save as JPG.
 yt-dlp and ffmpeg are bundled, so users install nothing else.
-Files save to `Downloads/ReelSave`.
+A **Save as** window asks where to save each file (tick/untick "Ask where to save each file" in the app).
+With it off, files go to `Downloads/ReelSave`.
 
 ## Windows (built)
 `dist/ReelSave-1.0.0-Setup.exe` (installer) or `dist/ReelSave-1.0.0-Portable.exe` (no install).
